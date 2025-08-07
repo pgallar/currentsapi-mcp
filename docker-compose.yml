@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  news-mcp:
+    build: .
+    container_name: news-mcp
+    command: ./start-server.sh
+    environment:
+      - CURRENTS_API_KEY=${CURRENTS_API_KEY}
+      - HOST=0.0.0.0
+      - PORT=8000
+      - USE_SSE=true
+      - RELOAD=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs
+      - ./src:/app/src  # Para desarrollo, permite hot-reload
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "bash", "/app/healthcheck.sh"]
+      interval: 300s
+      timeout: 30s
+      retries: 3
+      start_period: 120s
+    networks:
+      - news-network
+
+networks:
+  news-network:
+    name: news-network
+    driver: bridge
