@@ -143,13 +143,13 @@ class NewsRoutes(BaseRoutes):
                         await asyncio.sleep(5)
             except asyncio.CancelledError:
                 # Enviar evento de cierre cuando se cancela el stream
-                yield SSEvent(
-                    event="close",
-                    data=json.dumps({
+                yield {
+                    "event": "close",
+                    "data": json.dumps({
                         "timestamp": asyncio.get_event_loop().time(),
                         "message": "Stream cerrado"
                     })
-                )
+                }
         
 
         
@@ -201,13 +201,13 @@ class NewsRoutes(BaseRoutes):
                         await asyncio.sleep(5)
             except asyncio.CancelledError:
                 # Enviar evento de cierre cuando se cancela el stream
-                yield SSEvent(
-                    event="close",
-                    data=json.dumps({
+                yield {
+                    "event": "close",
+                    "data": json.dumps({
                         "timestamp": asyncio.get_event_loop().time(),
                         "message": "Stream cerrado"
                     })
-                )
+                }
         
         @mcp.tool(
             name="get_available_languages",
