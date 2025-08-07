@@ -8,11 +8,11 @@ services:
     environment:
       - CURRENTS_API_KEY=${CURRENTS_API_KEY}
       - HOST=0.0.0.0
-      - PORT=8000
+      - PORT=8004
       - USE_SSE=true
       - RELOAD=true
     ports:
-      - "8000:8000"
+      - "8004:8004"
     volumes:
       - ./logs:/app/logs
       - ./src:/app/src  # Para desarrollo, permite hot-reload

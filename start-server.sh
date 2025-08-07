@@ -31,7 +31,7 @@ echo ""
 
 # Configurar variables de entorno para SSE
 export HOST=0.0.0.0
-export PORT=8000
+export PORT=8004
 export USE_SSE=true
 export RELOAD=true
 

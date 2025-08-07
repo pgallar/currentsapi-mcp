@@ -67,8 +67,8 @@ El servidor MCP espera que la variable de entorno `CURRENTS_API_KEY` esté confi
 
 Una vez iniciado el servidor, puedes acceder a la API en:
 
-- Lista de herramientas: http://localhost:8000/api/v1/tools
-- Endpoint SSE: http://localhost:8000/sse/
+- Lista de herramientas: http://localhost:8004/api/v1/tools
+- Endpoint SSE: http://localhost:8004/sse/
 
 ## Ejemplos de uso
 
@@ -76,7 +76,7 @@ Una vez iniciado el servidor, puedes acceder a la API en:
 
 ```javascript
 // Ejemplo en JavaScript
-const eventSource = new EventSource('http://localhost:8000/api/v1/tools/stream_search_news?language=en&category=technology&keywords=AI');
+const eventSource = new EventSource('http://localhost:8004/api/v1/tools/stream_search_news?language=en&category=technology&keywords=AI');
 
 eventSource.addEventListener('search_news', function(event) {
     const data = JSON.parse(event.data);
@@ -88,7 +88,7 @@ eventSource.addEventListener('search_news', function(event) {
 
 ```javascript
 // Ejemplo en JavaScript
-const eventSource = new EventSource('http://localhost:8000/api/v1/tools/stream_latest_news?language=es');
+const eventSource = new EventSource('http://localhost:8004/api/v1/tools/stream_latest_news?language=es');
 
 eventSource.addEventListener('latest_news', function(event) {
     const data = JSON.parse(event.data);
@@ -113,7 +113,7 @@ import json
 
 async def consume_news_sse():
     async with aiohttp.ClientSession() as session:
-        async with session.get('http://localhost:8000/api/v1/tools/stream_latest_news?language=es') as response:
+        async with session.get('http://localhost:8004/api/v1/tools/stream_latest_news?language=es') as response:
             async for line in response.content:
                 if line.startswith(b'data:'):
                     data = json.loads(line.decode('utf-8')[5:])

@@ -36,7 +36,7 @@ ENV USE_SSE=true
 HEALTHCHECK --interval=300s --timeout=30s --start-period=120s --retries=3 CMD ./healthcheck.sh
 
 # Exponer puerto
-EXPOSE 8000
+EXPOSE 8004
 
 # Comando para iniciar el servidor con SSE
 CMD ["./start-server.sh"]

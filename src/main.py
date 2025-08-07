@@ -18,7 +18,7 @@ def get_server_config() -> dict:
     
     return {
         "host": os.getenv("HOST", "0.0.0.0"),
-        "port": int(os.getenv("PORT", "8000")),
+        "port": int(os.getenv("PORT", "8004")),
         "log_level": os.getenv("LOG_LEVEL", "info"),
         "use_sse": use_sse,
         "reload": reload,

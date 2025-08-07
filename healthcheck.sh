@@ -3,7 +3,7 @@
 
 # Configuración
 HOST="localhost"
-PORT="8000"
+PORT="8004"
 ENDPOINT="/sse/"
 TIMEOUT=10
 MAX_RETRIES=3
