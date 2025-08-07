@@ -77,7 +77,7 @@ class NewsRoutes(BaseRoutes):
             country: Optional[str] = Field(default=None, description="País para filtrar (ej: US, ES)"),
             category: Optional[str] = Field(default=None, description="Categoría para filtrar (ej: technology, business)"),
             interval: int = Field(default=300, description="Intervalo de actualización en segundos")
-        ) -> AsyncGenerator[Dict[str, Any], None]:
+        ):
             """
             Stream de búsqueda de noticias con SSE
             
@@ -91,28 +91,28 @@ class NewsRoutes(BaseRoutes):
             import asyncio
             import json
             import datetime
+            from fastapi.responses import StreamingResponse
             
-            # Obtener fecha actual para el inicio de la búsqueda
-            now = datetime.datetime.utcnow()
-            
-            try:
-                while True:
-                    try:
-                        # Buscar noticias desde la última hora
-                        start_date = (now - datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-                        
-                        result = await self.client.search_news(
-                            language=language,
-                            keywords=keywords,
-                            country=country,
-                            category=category,
-                            start_date=start_date
-                        )
-                        
-                        # Enviar evento con los datos
-                        yield {
-                            "event": "search_news",
-                            "data": json.dumps({
+            async def news_generator():
+                # Obtener fecha actual para el inicio de la búsqueda
+                now = datetime.datetime.utcnow()
+                
+                try:
+                    while True:
+                        try:
+                            # Buscar noticias desde la última hora
+                            start_date = (now - datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+                            
+                            result = await self.client.search_news(
+                                language=language,
+                                keywords=keywords,
+                                country=country,
+                                category=category,
+                                start_date=start_date
+                            )
+                            
+                            # Enviar evento con los datos
+                            event_data = {
                                 "timestamp": asyncio.get_event_loop().time(),
                                 "search_params": {
                                     "language": language,
@@ -122,34 +122,40 @@ class NewsRoutes(BaseRoutes):
                                     "start_date": start_date
                                 },
                                 "data": result
-                            })
-                        }
-                        
-                        # Actualizar la fecha para la próxima búsqueda
-                        now = datetime.datetime.utcnow()
-                        
-                        # Esperar el intervalo configurado
-                        await asyncio.sleep(interval)
-                    except Exception as e:
-                        # Enviar evento de error
-                        yield {
-                            "event": "error",
-                            "data": json.dumps({
-                                "timestamp": asyncio.get_event_loop().time(),
-                                "error": str(e)
-                            })
-                        }
-                        # Esperar antes de reintentar
-                        await asyncio.sleep(5)
-            except asyncio.CancelledError:
-                # Enviar evento de cierre cuando se cancela el stream
-                yield {
-                    "event": "close",
-                    "data": json.dumps({
-                        "timestamp": asyncio.get_event_loop().time(),
-                        "message": "Stream cerrado"
-                    })
-                }
+                            }
+                            
+                            yield {
+                                "event": "search_news",
+                                "data": json.dumps(event_data)
+                            }
+                            
+                            # Actualizar la fecha para la próxima búsqueda
+                            now = datetime.datetime.utcnow()
+                            
+                            # Esperar el intervalo configurado
+                            await asyncio.sleep(interval)
+                        except Exception as e:
+                            # Enviar evento de error
+                            yield {
+                                "event": "error",
+                                "data": json.dumps({
+                                    "timestamp": asyncio.get_event_loop().time(),
+                                    "error": str(e)
+                                })
+                            }
+                            # Esperar antes de reintentar
+                            await asyncio.sleep(5)
+                except asyncio.CancelledError:
+                    # Enviar evento de cierre cuando se cancela el stream
+                    yield {
+                        "event": "close",
+                        "data": json.dumps({
+                            "timestamp": asyncio.get_event_loop().time(),
+                            "message": "Stream cerrado"
+                        })
+                    }
+            
+            return news_generator()
         
 
         
@@ -161,7 +167,7 @@ class NewsRoutes(BaseRoutes):
         async def stream_latest_news(
             language: Optional[str] = Field(default=None, description="Código de idioma (ej: en, es, fr)"),
             interval: int = Field(default=60, description="Intervalo de actualización en segundos")
-        ) -> AsyncGenerator[Dict[str, Any], None]:
+        ):
             """
             Stream de las últimas noticias con SSE
             
@@ -171,43 +177,47 @@ class NewsRoutes(BaseRoutes):
             """
             import asyncio
             import json
+            from fastapi.responses import StreamingResponse
             
-            try:
-                while True:
-                    try:
-                        result = await self.client.get_latest_news(language=language)
-                        
-                        # Enviar evento con los datos
-                        yield {
-                            "event": "latest_news",
-                            "data": json.dumps({
-                                "timestamp": asyncio.get_event_loop().time(),
-                                "data": result
-                            })
-                        }
-                        
-                        # Esperar el intervalo configurado
-                        await asyncio.sleep(interval)
-                    except Exception as e:
-                        # Enviar evento de error
-                        yield {
-                            "event": "error",
-                            "data": json.dumps({
-                                "timestamp": asyncio.get_event_loop().time(),
-                                "error": str(e)
-                            })
-                        }
-                        # Esperar antes de reintentar
-                        await asyncio.sleep(5)
-            except asyncio.CancelledError:
-                # Enviar evento de cierre cuando se cancela el stream
-                yield {
-                    "event": "close",
-                    "data": json.dumps({
-                        "timestamp": asyncio.get_event_loop().time(),
-                        "message": "Stream cerrado"
-                    })
-                }
+            async def latest_news_generator():
+                try:
+                    while True:
+                        try:
+                            result = await self.client.get_latest_news(language=language)
+                            
+                            # Enviar evento con los datos
+                            yield {
+                                "event": "latest_news",
+                                "data": json.dumps({
+                                    "timestamp": asyncio.get_event_loop().time(),
+                                    "data": result
+                                })
+                            }
+                            
+                            # Esperar el intervalo configurado
+                            await asyncio.sleep(interval)
+                        except Exception as e:
+                            # Enviar evento de error
+                            yield {
+                                "event": "error",
+                                "data": json.dumps({
+                                    "timestamp": asyncio.get_event_loop().time(),
+                                    "error": str(e)
+                                })
+                            }
+                            # Esperar antes de reintentar
+                            await asyncio.sleep(5)
+                except asyncio.CancelledError:
+                    # Enviar evento de cierre cuando se cancela el stream
+                    yield {
+                        "event": "close",
+                        "data": json.dumps({
+                            "timestamp": asyncio.get_event_loop().time(),
+                            "message": "Stream cerrado"
+                        })
+                    }
+            
+            return latest_news_generator()
         
         @mcp.tool(
             name="get_available_languages",
