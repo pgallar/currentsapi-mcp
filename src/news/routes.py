@@ -75,7 +75,9 @@ class NewsRoutes(BaseRoutes):
             language: Optional[str] = Field(default=None, description="Código de idioma (ej: en, es, fr)"),
             keywords: Optional[str] = Field(default=None, description="Palabras clave para la búsqueda"),
             country: Optional[str] = Field(default=None, description="País para filtrar (ej: US, ES)"),
-            category: Optional[str] = Field(default=None, description="Categoría para filtrar (ej: technology, business)")
+            category: Optional[str] = Field(default=None, description="Categoría para filtrar (ej: technology, business)"),
+            start_date: Optional[str] = Field(default=None, description="Fecha de inicio (formato: YYYY-MM-DDTHH:MM:SS+00:00)"),
+            end_date: Optional[str] = Field(default=None, description="Fecha de fin (formato: YYYY-MM-DDTHH:MM:SS+00:00)")
         ) -> Dict[str, Any]:
             """
             Búsqueda de noticias
@@ -85,21 +87,24 @@ class NewsRoutes(BaseRoutes):
                 keywords: Palabras clave para la búsqueda
                 country: País para filtrar
                 category: Categoría para filtrar
+                start_date: Fecha de inicio (formato: YYYY-MM-DDTHH:MM:SS+00:00)
+                end_date: Fecha de fin (formato: YYYY-MM-DDTHH:MM:SS+00:00)
             """
             import datetime
             
             try:
-                # Obtener fecha actual para el inicio de la búsqueda
-                now = datetime.datetime.utcnow()
-                # Buscar noticias desde la última hora
-                start_date = (now - datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+                # Si no se proporciona start_date, usar la fecha de hace una hora
+                if not start_date:
+                    now = datetime.datetime.utcnow()
+                    start_date = (now - datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S+00:00")
                 
                 result = await self.client.search_news(
                     language=language,
                     keywords=keywords,
                     country=country,
                     category=category,
-                    start_date=start_date
+                    start_date=start_date,
+                    end_date=end_date
                 )
                 
                 return {
@@ -109,7 +114,8 @@ class NewsRoutes(BaseRoutes):
                         "keywords": keywords,
                         "country": country,
                         "category": category,
-                        "start_date": start_date
+                        "start_date": start_date,
+                        "end_date": end_date
                     },
                     "result": result
                 }
